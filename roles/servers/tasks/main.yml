@@ -1,0 +1,56 @@
+---
+- name: build list of workers
+  debug:
+    msg: "jobe-worker-{{ item }}"
+  loop: "{{ range(0, hetzner_jobe_worker_count)|list }}"
+  register: workernames
+
+- name: set worker list fact
+  set_fact:
+    workernames: "{{ workernames.results | map(attribute='msg') | list }}"
+
+- name: execute hcloud deployment
+  module_defaults:
+    hcloud_server:
+      api_token: "{{ lookup('env','HCLOUD_TOKEN') | default(hetzner_token, true) }}"
+      image: "{{ hetzner_instance_os }}"
+      server_type: "{{ hetzner_instance_type }}"
+      datacenter: "{{ hetzner_datacenter }}"
+      ssh_keys: "{{ hetzner_ssh_keys }}"
+      state: "{{ hetzner_serverstate }}"
+      labels: "jobe-worker=true"
+  block:
+    - loop: "{{ workernames }}"
+      hcloud_server:
+        name: "{{ item }}"
+
+
+- name: Create a basic Load Balancer
+  hetzner.hcloud.hcloud_load_balancer:
+    name: jobe-balancer
+    load_balancer_type: lb11
+    location: {{hetzner_lb_location}}
+    state: present
+
+- name: Create a label_selector Load Balancer target
+  hetzner.hcloud.hcloud_load_balancer_target:
+    type: label_selector
+    load_balancer: jobe-balancer
+    label_selector: "jobe-worker=true"
+    state: present
+
+- name: Create a basic Load Balancer service with Port 80
+  hetzner.hcloud.hcloud_load_balancer_service:
+    load_balancer: jobe-balancer
+    protocol: http
+    listen_port: 80
+    destination_port: 4000
+    state: present
+
+
+- name: wait for server deployment
+  pause:
+    seconds: 60
+
+- name: Refresh inventory
+  meta: refresh_inventory

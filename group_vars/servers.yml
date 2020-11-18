@@ -1,0 +1,8 @@
+hetzner_instance_type: 'cx21'
+hetzner_ssh_keys: ['enricobartz']
+hetzner_jobe_worker_count: 2
+hetzner_instance_os: 'ubuntu-20.04'
+hetzner_datacenter: 'nbg1-dc3'
+hetzner_serverstate: 'present'
+jobe_tz: "Europe/Berlin"
+jobe_pass: "changeme"

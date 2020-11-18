@@ -1,0 +1,20 @@
+---
+- name: install git
+  package:
+    name: git
+
+- name: Git clone jobeinabox repo
+  git:
+    force: yes
+    repo: 'https://github.com/trampgeek/jobeinabox'
+    dest: /root/jobeinabox
+  
+- name: build container
+  shell: docker build . -t my/jobeinabox --build-arg TZ="{{jobe_tz}}" --build-arg ROOTPASS="{{jobe_pass}}"
+  args:
+    chdir: /root/jobeinabox
+
+- name: create jobeinabox container
+  shell: docker run -d --restart=unless-stopped -p 4000:80 --name jobe my/jobeinabox || true
+  
+

@@ -1,0 +1,9 @@
+---
+- name: 'install docker'
+  shell: 'curl https://releases.rancher.com/install-docker/19.03.sh | sh'
+
+- name: Make sure Docker is running
+  systemd:
+    state: started
+    enabled: yes
+    name: docker
