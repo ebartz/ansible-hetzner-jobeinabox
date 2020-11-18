@@ -29,7 +29,7 @@
   hetzner.hcloud.hcloud_load_balancer:
     name: jobe-balancer
     load_balancer_type: lb11
-    location: {{hetzner_lb_location}}
+    location: "{{hetzner_lb_location}}"
     state: present
 
 - name: Create a label_selector Load Balancer target
